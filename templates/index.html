@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strategic Aircraft Recommendation</title>
+    <style>
+        body {
+            background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.7);
+            width: 600px;
+        }
+        select, button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 16px;
+            border-radius: 8px;
+            border: none;
+        }
+        button {
+            background-color: crimson;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        button:hover {
+            background-color: darkred;
+        }
+        .result {
+            margin-top: 20px;
+            background: #111;
+            padding: 15px;
+            border-radius: 10px;
+        }
+        .result h3 {
+            margin-top: 0;
+            color: #00ffcc;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>🛰 National Security: Aircraft Deployment</h2>
+        <select id="location-select">
+            <option value="" disabled selected>Select a Strategic Location</option>
+            {% for loc in locations %}
+            <option value="{{ loc }}">{{ loc }}</option>
+            {% endfor %}
+        </select>
+        <button onclick="getRecommendation()">⚔️ Get Recommendations</button>
+        
+        <div class="result" id="result" style="display: none;">
+            <h3 id="location-title"></h3>
+            <p><strong>Threat Level:</strong> <span id="threat-level"></span></p>
+            <p><strong>Recommended Aircrafts:</strong></p>
+            <ul id="aircraft-list"></ul>
+        </div>
+    </div>
+    
+    <script>
+        function getRecommendation() {
+            const location = document.getElementById('location-select').value;
+            if (!location) {
+                alert("Please select a location.");
+                return;
+            }
+            
+            fetch("/recommend", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ location })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+                document.getElementById('result').style.display = 'block';
+                document.getElementById('location-title').textContent = `📍 Location: ${data.location}`;
+                document.getElementById('threat-level').textContent = data.threat;
+                const ul = document.getElementById('aircraft-list');
+                ul.innerHTML = "";
+                data.recommendations.forEach(item => {
+                    const li = document.createElement('li');
+                    li.textContent = item;
+                    ul.appendChild(li);
+                });
+            })
+            .catch(err => console.error(err));
+        }
+    </script>
+</body>
+</html>
